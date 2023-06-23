@@ -1,4 +1,6 @@
 
+// Because of how wheels are hooked up, the functions for moving will be slightly counterintuitive
+
 #define Lpwm_pin  5     //pin of controlling speed---- ENA of motor driver board
 #define Rpwm_pin  6    //pin of controlling speed---- ENB of motor driver board
 int pinLB=2;             //pin of controlling turning---- IN1 of motor driver board
@@ -60,38 +62,10 @@ void loop()
   }
   state = 0;
   
-//  if (state == '0') {
-//  go_backward(100);
-//  delay(2000);
-//  stopp();
-//  Serial.println("GO BACK"); // Send back, to the phone, the String "LED: ON"
-////  Serial.print("LED: OFF");
-//  state = 0;
-//  }
-//  else if (state == '1') {
-//  go_forward(100);
-//  delay(2000);
-//  stopp();
-//  Serial.println("GO FORWARD");
-////  Serial.print("GO FORWARD");
-//  state = 0;
-//  } 
-
-  // Test functions
-// go_forward(100);
-// delay(2000);
-// go_backward(100);
-// delay(2000);
-// rotate_left(150);
-// delay(2000);
-// rotate_right(150);
-// delay(2000);
-// stopp();
-// delay(2000);
  }
 
 
-void go_forward(unsigned char speed_val)    // speed_val：0~255
+void rotate_left(unsigned char speed_val)    // speed_val：0~255
     {digitalWrite(pinRB,HIGH); 
      digitalWrite(pinRF,LOW);
      digitalWrite(pinLB,HIGH);
@@ -102,7 +76,7 @@ void go_forward(unsigned char speed_val)    // speed_val：0~255
       
     }
 
-void go_backward(unsigned char speed_val)    // speed_val：0~255
+void rotate_right(unsigned char speed_val)    // speed_val：0~255
     {
      digitalWrite(pinRB,LOW);  
      digitalWrite(pinRF,HIGH);
@@ -112,7 +86,7 @@ void go_backward(unsigned char speed_val)    // speed_val：0~255
      analogWrite(Rpwm_pin,speed_val);
     }
     
-void rotate_left(unsigned char speed_val)        // speed_val：0~255
+void go_backward(unsigned char speed_val)        // speed_val：0~255
     {digitalWrite(pinRB,HIGH);
      digitalWrite(pinRF,LOW );  
      digitalWrite(pinLB,LOW); 
@@ -122,7 +96,7 @@ void rotate_left(unsigned char speed_val)        // speed_val：0~255
       
      
     }
-void rotate_right(unsigned char speed_val)    // speed_val：0~255
+void go_forward(unsigned char speed_val)    // speed_val：0~255
     {
       digitalWrite(pinRB,LOW);  
      digitalWrite(pinRF,HIGH);
