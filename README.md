@@ -1,6 +1,10 @@
 # AllTerrainRobot
 Code and documentation for all terrain robot
 
+# Design 
+![image](https://github.com/Myapi314/AllTerrainRobot/assets/97209406/b97788fb-4cd8-41e9-adc1-b6ae49ee54ee)
+
+
 # Schematic
 [View most up-to-date schematic](https://crcit.net/c/e8763686cd944002bac02424c5b18bc1)
 
