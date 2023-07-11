@@ -11,37 +11,16 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <Button
-            android:id="@+id/button_first"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="117dp"
-            android:layout_marginTop="32dp"
-            android:layout_marginEnd="117dp"
-            android:text="@string/connect"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/textview_first"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/conn_status"
-            android:textColor="@color/red"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.498"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button_first"
-            app:layout_constraintVertical_bias="0.038" />
 
         <Button
             android:id="@+id/button_stop"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="1dp"
+            android:layout_marginTop="2dp"
             android:layout_marginEnd="1dp"
+            android:layout_marginBottom="2dp"
+            android:enabled="false"
             android:text="@string/stop"
             app:layout_constraintBottom_toTopOf="@+id/button_back"
             app:layout_constraintEnd_toStartOf="@+id/button_right"
@@ -50,38 +29,57 @@
 
         <Button
             android:id="@+id/button_forward"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="147dp"
-            android:layout_marginTop="112dp"
+            android:layout_marginTop="32dp"
             android:layout_marginEnd="147dp"
+            android:enabled="false"
             android:text="@string/forward"
             android:textAlignment="center"
+            app:icon="@drawable/up_arrow"
+            app:iconGravity="textTop"
+            app:iconPadding="5dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.47"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textview_first" />
+            app:layout_constraintTop_toBottomOf="@id/devices_list_view" />
 
         <Button
             android:id="@+id/button_right"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="105dp"
             android:layout_marginEnd="60dp"
-            android:layout_marginBottom="53dp"
+            android:drawableEnd="@drawable/arrow"
+            android:enabled="false"
+            android:insetRight="0dp"
             android:text="@string/right"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:textAlignment="center"
+            app:icon="@drawable/arrow"
+            app:iconGravity="textEnd"
+            app:iconPadding="5dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
-            app:layout_constraintStart_toEndOf="@+id/button_stop" />
+            app:layout_constraintStart_toEndOf="@+id/button_stop"
+            app:layout_constraintTop_toBottomOf="@id/devices_list_view" />
 
         <Button
             android:id="@+id/button_back"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="147dp"
             android:layout_marginEnd="147dp"
-            android:layout_marginBottom="4dp"
+            android:layout_marginBottom="32dp"
+            android:enabled="false"
             android:text="@string/back"
+            android:textAlignment="center"
+            app:icon="@drawable/down_arrow"
+            app:iconGravity="textTop"
+            app:iconPadding="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -89,14 +87,29 @@
 
         <Button
             android:id="@+id/button_left"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="60dp"
-            android:layout_marginBottom="53dp"
+            android:layout_marginTop="105dp"
+            android:enabled="false"
             android:text="@string/left"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:icon="@drawable/left_arrow"
+            app:iconPadding="5dp"
             app:layout_constraintEnd_toStartOf="@+id/button_stop"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/devices_list_view" />
+
+        <ListView
+            android:id="@+id/devices_list_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:choiceMode="singleChoice"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/button_forward"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

@@ -1,6 +1,16 @@
 <resources>
     <string name="app_name">All Terrain Robot Controller</string>
     <string name="action_settings">Settings</string>
+    <string name="sBTdevNF">"Bluetooth device not found!"</string>
+    <string name="sBTstaNF">Status: Bluetooth not found</string>
+    <string name="BTconnFail">Connection Failed</string>
+    <string name="BTConnected">Connected to HC-05!</string>
+    <string name="cConnect">Connecting…</string>
+    <string name="ErrSockCrea">Socket creation failed</string>
+    <string name="BTnotOn">Bluetooth not on</string>
+    <string name="DisconnectBT">Disconnect from HC-05</string>
+    <string name="ConnectBT">Connect to HC-05</string>
+
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">ATR-01</string>
     <string name="second_fragment_label">Second Fragment</string>
@@ -52,4 +62,5 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="title_activity_select_device">SelectDeviceActivity</string>
 </resources>

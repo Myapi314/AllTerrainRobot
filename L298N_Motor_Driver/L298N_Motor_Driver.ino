@@ -9,6 +9,11 @@ int pinRB=7;            //pin of controlling turning---- IN3 of motor driver boa
 int pinRF=8;            //pin of controlling turning---- IN4 of motor driver board
 
 int state = 0;
+int speed_val = 80;
+int speed_inc = 20;
+int min_speed = 50;
+int max_speed = 255;
+int turn_speed = 120;
 
 void setup()
 {
@@ -32,38 +37,66 @@ void loop()
 
   switch (state)
   {
-    case '0':
+    case 'f':
       // go forward
       Serial.println("Begin Moving Forward...");
-      go_forward(100);
+      go_forward(speed_val);
       break;
-    case '1':
+    case 'b':
       // go backward
       Serial.println("Begin Moving Backward...");
-      go_backward(100);
+      go_backward(speed_val);
       break;
-    case '2':
+    case 'l':
       // go left
       Serial.println("Begin Moving Left...");
-      rotate_left(100);
+      rotate_left(speed_val);
       break;
-    case '3':
+    case 'r':
       // go right
       Serial.println("Begin Moving Right...");
-      rotate_right(100);
+      rotate_right(speed_val);
       break;
-    case '4':
+    case 's':
       // stop
       Serial.println("STOP");
       stopp();
       break;
+    case 'u':
+      // up speed
+      Serial.println("Up Speed");
+      speed_val += speed_inc;
+      if (speed_val >= max_speed)
+      {
+        speed_val = max_speed;
+      }
+      update_speed(speed_val);
+      Serial.println(speed_val);
+      break;
+    case 'd':
+      // down speed
+      Serial.println("Slow Down");
+      speed_val -= speed_inc;
+      if (speed_val <= min_speed)
+      {
+        stopp();
+      }
+      update_speed(speed_val);
+      Serial.println(speed_val);
+      break;
     default:
       break;
   }
+
   state = 0;
   
  }
 
+void update_speed(unsigned char speed_val)
+  {
+     analogWrite(Lpwm_pin,speed_val);
+     analogWrite(Rpwm_pin,speed_val);
+  }
 
 void rotate_left(unsigned char speed_val)    // speed_val：0~255
     {digitalWrite(pinRB,HIGH); 
