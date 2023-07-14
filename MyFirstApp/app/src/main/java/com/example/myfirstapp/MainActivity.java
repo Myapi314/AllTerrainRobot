@@ -50,11 +50,11 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private final String TAG = MainActivity.class.getSimpleName();
 
+    // MAC Address for HC-05
     public final static String MODULE_MAC = "20:19:07:00:56:C5";
     private static final UUID BT_MODULE_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"); // "random" unique identifier
 
     // #defines for identifying shared types between calling functions
-    private final static int REQUEST_ENABLE_BT = 1; // used to identify adding bluetooth names
     public final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
     private final static int CONNECTING_STATUS = 3; // used in bluetooth handler to identify message status
 
@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothSocket mBTSocket = null; // bi-directional client-to-client data path
 
     private TextView mBluetoothStatus;
-    private ListView mDevicesListView;
     private TextView mReadBuffer;
 
     private Button mButtonF;
@@ -84,22 +83,16 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Setup of main activity
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);
 
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-
+        // Assign components
         mBluetoothStatus = binding.getRoot().findViewById(R.id.textview_first);
         mBTArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         mBTAdapter = BluetoothAdapter.getDefaultAdapter(); // get a handle on the bluetooth radio
-
-        mDevicesListView = binding.getRoot().findViewById(R.id.devices_list_view);
-        mDevicesListView.setAdapter(mBTArrayAdapter); // assign model to view
-        mDevicesListView.setOnItemClickListener(mDeviceClickListener);
 
         mReadBuffer = findViewById(R.id.textViewRx);
 
@@ -111,51 +104,46 @@ public class MainActivity extends AppCompatActivity {
         mButtonU = binding.getRoot().findViewById(R.id.button_up);
         mButtonD = binding.getRoot().findViewById(R.id.button_down);
 
+        // Permissions check
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
         }
 
         mHandler = new Handler(Looper.getMainLooper()) {
-
-            String buttonText = "Connect to HC-05";
-            boolean moveButtonStatus = false;
-            int color = getResources().getColor(R.color.red, getTheme());
             @Override
             public void handleMessage(Message msg) {
 
+                // Read in serial messages from Arduino and display in read buffer textView
                 if (msg.what == MESSAGE_READ) {
                     String readMessage;
                     readMessage = new String((byte[]) msg.obj, StandardCharsets.UTF_8);
                     mReadBuffer.setText(readMessage);
                 }
 
+                // If received a connecting status, handle
                 if (msg.what == CONNECTING_STATUS) {
 
+                    // Default formatting
                     String buttonText = getString(R.string.ConnectBT);
                     boolean moveButtonStatus = false;
                     int color = getResources().getColor(R.color.red, getTheme());
 
-                    char[] sConnected;
                     if (msg.arg1 == 1) {
+                        // BT connected
                         mBluetoothStatus.setText(getString(R.string.BTConnected));
                         color = getResources().getColor(R.color.green, getTheme());
                         moveButtonStatus = true;
                         buttonText = getString(R.string.DisconnectBT);
                     } else if (msg.arg1 == -1 && msg.arg2 == 1) {
+                        // BT has been disconnected
                         mBluetoothStatus.setText(getString(R.string.BTDisconnected));
                         mReadBuffer.setText(getString(R.string.readBuffer));
                     } else {
+                        // BT failed to connect
                         mBluetoothStatus.setText(getString(R.string.BTconnFail));
                         mReadBuffer.setText(getString(R.string.readBuffer));
                     }
+                    // Update formatting
                     mBluetoothStatus.setTextColor(color);
                     binding.buttonFirst.setText(buttonText);
                     mButtonF.setEnabled(moveButtonStatus);
@@ -173,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
         if (mBTArrayAdapter == null) {
             // Device does not support Bluetooth
             mBluetoothStatus.setText(getString(R.string.sBTstaNF));
-            Toast.makeText(getApplicationContext(),getString(R.string.sBTdevNF),Toast.LENGTH_SHORT).show();
         }
         else {
             binding.buttonFirst.setOnClickListener(this::connectToArduino);
@@ -182,10 +169,12 @@ public class MainActivity extends AppCompatActivity {
             mButtonB.setOnClickListener(this::moveBackward);
             mButtonL.setOnClickListener(this::moveLeft);
             mButtonS.setOnClickListener(this::stopMoving);
-            mButtonU.setOnClickListener(this::speedUp);
-            mButtonD.setOnClickListener(this::slowDown);
+            mButtonU.setOnClickListener(view -> mConnectedThread.write("u"));
+            mButtonD.setOnClickListener(view -> mConnectedThread.write("d"));
         }
-        binding.fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+
+        // icon button in bottom left of screen
+        binding.fab.setOnClickListener(view -> Snackbar.make(view, "Someday this may have an important message", Snackbar.LENGTH_LONG)
                 .setAnchorView(R.id.fab)
                 .setAction("Action", null).show());
     }
@@ -213,113 +202,102 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
-    }
-
     @RequiresApi(api = Build.VERSION_CODES.S)
     private void connectToArduino(View view) {
+
+        // Check if there is already a connection to the Arduino
         if(mBTSocket != null && mBTSocket.isConnected()) {
-            try {
-                stopMoving(view);
-                mBTSocket.close();
-                mHandler.obtainMessage(CONNECTING_STATUS, -1, 1)
-                        .sendToTarget();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            // Stop motors from moving
+            stopMoving(view);
+
+            // Close the connection
+            mConnectedThread.cancel();
+
+            // Handle closing the connection formatting
+            mHandler.obtainMessage(CONNECTING_STATUS, -1, 1)
+                    .sendToTarget();
             return;
         }
 
+        // Clear the array of paired BT devices
         mBTArrayAdapter.clear();
 
+        // Permissions check
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
         }
 
+        // Get the paired devices
         mPairedDevices = mBTAdapter.getBondedDevices();
 
+        // Check if BT is enabled
         if (mBTAdapter.isEnabled()) {
-            // put it's one to the adapter
+
+            // Cycle through paired devices to find HC-05 module and attempt to connect
             for (BluetoothDevice device : mPairedDevices) {
                 String address = device.getAddress();
                 String name = device.getName();
-                if(device.getAddress().equals(MODULE_MAC)) {
-                    mBTArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+                if(address.equals(MODULE_MAC)) {
+                    // Spawn a new thread to avoid blocking the GUI one
+                    new Thread()
+                    {
+                        @RequiresApi(api = Build.VERSION_CODES.S)
+                        @SuppressLint("MissingPermission")
+                        @Override
+                        public void run() {
+                            boolean fail = false;
+
+                            // Get device from MAC address
+                            BluetoothDevice device = mBTAdapter.getRemoteDevice(address);
+
+                            try {
+                                // Attempt to create a socket with the device
+                                mBTSocket = createBluetoothSocket(device);
+                            } catch (IOException e) {
+                                fail = true;
+                                Toast.makeText(getBaseContext(), getString(R.string.ErrSockCrea), Toast.LENGTH_SHORT).show();
+                            }
+
+                            // Establish the Bluetooth socket connection.
+                            try {
+                                mBTSocket.connect();
+                            } catch (IOException e) {
+                                try {
+                                    // Close the socket if it failed to connect
+                                    fail = true;
+                                    mBTSocket.close();
+                                    mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
+                                            .sendToTarget();
+                                } catch (IOException e2) {
+                                    Toast.makeText(getBaseContext(), getString(R.string.ErrSockCrea), Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                            if(!fail) {
+                                // If the connection did not fail we have a connected thread and the handler sends the connecting status
+                                mConnectedThread = new ConnectedThread(mBTSocket, mHandler);
+                                mConnectedThread.start();
+
+                                mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, name)
+                                        .sendToTarget();
+                            }
+                        }
+                    }.start();
+                    return;
                 }
             }
         } else
             Toast.makeText(getApplicationContext(), getString(R.string.BTnotOn), Toast.LENGTH_SHORT).show();
     }
 
-    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-            if(!mBTAdapter.isEnabled()) {
-                Toast.makeText(getBaseContext(), getString(R.string.BTnotOn), Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            mBluetoothStatus.setText(getString(R.string.cConnect));
-            // Get the device MAC address, which is the last 17 chars in the View
-            String info = ((TextView) view).getText().toString();
-            final String address = info.substring(info.length() - 17);
-            final String name = info.substring(0,info.length() - 17);
-
-           mBTArrayAdapter.clear();
-
-            // Spawn a new thread to avoid blocking the GUI one
-            new Thread()
-            {
-                @RequiresApi(api = Build.VERSION_CODES.S)
-                @SuppressLint("MissingPermission")
-                @Override
-                public void run() {
-                    boolean fail = false;
-
-                    BluetoothDevice device = mBTAdapter.getRemoteDevice(address);
-
-                    try {
-                        mBTSocket = createBluetoothSocket(device);
-                    } catch (IOException e) {
-                        fail = true;
-                        Toast.makeText(getBaseContext(), getString(R.string.ErrSockCrea), Toast.LENGTH_SHORT).show();
-                    }
-                    // Establish the Bluetooth socket connection.
-                    try {
-                        mBTSocket.connect();
-                    } catch (IOException e) {
-                        try {
-                            fail = true;
-                            mBTSocket.close();
-                            mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
-                                    .sendToTarget();
-                        } catch (IOException e2) {
-                            //insert code to deal with this
-                            Toast.makeText(getBaseContext(), getString(R.string.ErrSockCrea), Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                    if(!fail) {
-                        mConnectedThread = new ConnectedThread(mBTSocket, mHandler);
-                        mConnectedThread.start();
-
-                        mHandler.obtainMessage(CONNECTING_STATUS, 1, -1, name)
-                                .sendToTarget();
-                    }
-                }
-            }.start();
-        }
-    };
-
     @RequiresApi(api = Build.VERSION_CODES.S)
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
+
+        // Permissions check
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
         }
+
+        // Create RFComm connection
         try {
             final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
             return (BluetoothSocket) m.invoke(device, BT_MODULE_UUID);
@@ -330,7 +308,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void moveForward(View view) {
+        // Send command to move forward
         mConnectedThread.write("f");
+
+        // Set only forward button as hovered
         mButtonF.setHovered(true);
         mButtonB.setHovered(false);
         mButtonL.setHovered(false);
@@ -338,7 +319,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void moveRight(View view) {
+        // Send command to move right
         mConnectedThread.write("r");
+
+        // Set only right button as hovered
         mButtonF.setHovered(false);
         mButtonB.setHovered(false);
         mButtonL.setHovered(false);
@@ -346,7 +330,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void moveBackward(View view) {
+        // Send command to move backward
         mConnectedThread.write("b");
+
+        // Set only Back button as hovered
         mButtonF.setHovered(false);
         mButtonB.setHovered(true);
         mButtonL.setHovered(false);
@@ -354,7 +341,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void moveLeft(View view) {
+        // Send command to move left
         mConnectedThread.write("l");
+
+        // Set only left button as hovered
         mButtonF.setHovered(false);
         mButtonB.setHovered(false);
         mButtonL.setHovered(true);
@@ -362,19 +352,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopMoving(View view) {
+        // Send command to stop
         mConnectedThread.write("s");
+
+        // Remove hover from all buttons
         mButtonF.setHovered(false);
         mButtonB.setHovered(false);
         mButtonL.setHovered(false);
         mButtonR.setHovered(false);
     }
 
-    private void slowDown(View view) {
-        mConnectedThread.write("d");
-    }
-
-    private void speedUp(View view) {
-        mConnectedThread.write("u");
-    }
 }
 

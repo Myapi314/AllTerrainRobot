@@ -20,8 +20,7 @@ public class ConnectedThread extends Thread {
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
 
-        // Get the input and output streams, using temp objects because
-        // member streams are final
+        // Get the input and output streams, using temp objects because member streams are final
         try {
             tmpIn = socket.getInputStream();
             tmpOut = socket.getOutputStream();
@@ -35,6 +34,7 @@ public class ConnectedThread extends Thread {
     public void run() {
         byte[] buffer = new byte[1024];  // buffer store for the stream
         int bytes; // bytes returned from read()
+
         // Keep listening to the InputStream until an exception occurs
         while (true) {
             try {
