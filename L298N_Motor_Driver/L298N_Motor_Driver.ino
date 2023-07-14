@@ -9,6 +9,7 @@ int pinRB=7;            //pin of controlling turning---- IN3 of motor driver boa
 int pinRF=8;            //pin of controlling turning---- IN4 of motor driver board
 
 int state = 0;
+int norm_speed = 80;
 int speed_val = 80;
 int speed_inc = 20;
 int min_speed = 50;
@@ -39,54 +40,63 @@ void loop()
   {
     case 'f':
       // go forward
-      Serial.println("Begin Moving Forward...");
       go_forward(speed_val);
+      Serial.print("Forward at ");
+      Serial.println(speed_val);
       break;
     case 'b':
       // go backward
-      Serial.println("Begin Moving Backward...");
       go_backward(speed_val);
+      Serial.print("Backward at ");
+      Serial.println(speed_val);
       break;
     case 'l':
       // go left
-      Serial.println("Begin Moving Left...");
-      rotate_left(speed_val);
+      rotate_left(turn_speed);
+      Serial.print("Left at ");
+      Serial.println(turn_speed);
       break;
     case 'r':
       // go right
-      Serial.println("Begin Moving Right...");
-      rotate_right(speed_val);
+      rotate_right(turn_speed);
+      Serial.print("Right at ");
+      Serial.println(turn_speed);
       break;
     case 's':
       // stop
-      Serial.println("STOP");
+      speed_val = norm_speed;
       stopp();
+      Serial.println("STOP");
       break;
     case 'u':
       // up speed
-      Serial.println("Up Speed");
       speed_val += speed_inc;
       if (speed_val >= max_speed)
       {
         speed_val = max_speed;
       }
       update_speed(speed_val);
+      Serial.print("Up Speed to ");
       Serial.println(speed_val);
       break;
     case 'd':
       // down speed
-      Serial.println("Slow Down");
       speed_val -= speed_inc;
       if (speed_val <= min_speed)
       {
         stopp();
       }
       update_speed(speed_val);
+      Serial.print("Slow Down to ");
       Serial.println(speed_val);
       break;
     default:
       break;
   }
+
+
+
+
 
   state = 0;
   

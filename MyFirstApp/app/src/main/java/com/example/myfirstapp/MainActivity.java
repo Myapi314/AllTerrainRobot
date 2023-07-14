@@ -75,9 +75,8 @@ public class MainActivity extends AppCompatActivity {
     private Button mButtonL;
     private Button mButtonR;
     private Button mButtonS;
-
-    BluetoothManager bluetoothManager;
-    BluetoothAdapter bluetoothAdapter;
+    private Button mButtonU;
+    private Button mButtonD;
 
 
     @RequiresApi(api = Build.VERSION_CODES.S)
@@ -102,14 +101,15 @@ public class MainActivity extends AppCompatActivity {
         mDevicesListView.setAdapter(mBTArrayAdapter); // assign model to view
         mDevicesListView.setOnItemClickListener(mDeviceClickListener);
 
+        mReadBuffer = findViewById(R.id.textViewRx);
+
         mButtonF = binding.getRoot().findViewById(R.id.button_forward);
         mButtonB = binding.getRoot().findViewById(R.id.button_back);
         mButtonL = binding.getRoot().findViewById(R.id.button_left);
         mButtonR = binding.getRoot().findViewById(R.id.button_right);
         mButtonS = binding.getRoot().findViewById(R.id.button_stop);
-
-//        bluetoothManager = getSystemService(BluetoothManager.class);
-//        bluetoothAdapter = bluetoothManager.getAdapter();
+        mButtonU = binding.getRoot().findViewById(R.id.button_up);
+        mButtonD = binding.getRoot().findViewById(R.id.button_down);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.BLUETOOTH_CONNECT}, 1);
@@ -131,11 +131,11 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void handleMessage(Message msg) {
 
-//                if (msg.what == MESSAGE_READ) {
-//                    String readMessage = null;
-//                    readMessage = new String((byte[]) msg.obj, StandardCharsets.UTF_8);
-//                    mReadBuffer.setText(readMessage);
-//                }
+                if (msg.what == MESSAGE_READ) {
+                    String readMessage;
+                    readMessage = new String((byte[]) msg.obj, StandardCharsets.UTF_8);
+                    mReadBuffer.setText(readMessage);
+                }
 
                 if (msg.what == CONNECTING_STATUS) {
 
@@ -149,17 +149,22 @@ public class MainActivity extends AppCompatActivity {
                         color = getResources().getColor(R.color.green, getTheme());
                         moveButtonStatus = true;
                         buttonText = getString(R.string.DisconnectBT);
-                    }
-                    else
+                    } else if (msg.arg1 == -1 && msg.arg2 == 1) {
+                        mBluetoothStatus.setText(getString(R.string.BTDisconnected));
+                        mReadBuffer.setText(getString(R.string.readBuffer));
+                    } else {
                         mBluetoothStatus.setText(getString(R.string.BTconnFail));
-
+                        mReadBuffer.setText(getString(R.string.readBuffer));
+                    }
                     mBluetoothStatus.setTextColor(color);
                     binding.buttonFirst.setText(buttonText);
-                    binding.getRoot().findViewById(R.id.button_forward).setEnabled(moveButtonStatus);
-                    binding.getRoot().findViewById(R.id.button_back).setEnabled(moveButtonStatus);
-                    binding.getRoot().findViewById(R.id.button_left).setEnabled(moveButtonStatus);
-                    binding.getRoot().findViewById(R.id.button_right).setEnabled(moveButtonStatus);
-                    binding.getRoot().findViewById(R.id.button_stop).setEnabled(moveButtonStatus);
+                    mButtonF.setEnabled(moveButtonStatus);
+                    mButtonB.setEnabled(moveButtonStatus);
+                    mButtonL.setEnabled(moveButtonStatus);
+                    mButtonR.setEnabled(moveButtonStatus);
+                    mButtonS.setEnabled(moveButtonStatus);
+                    mButtonU.setEnabled(moveButtonStatus);
+                    mButtonD.setEnabled(moveButtonStatus);
                 }
 
             }
@@ -177,6 +182,8 @@ public class MainActivity extends AppCompatActivity {
             mButtonB.setOnClickListener(this::moveBackward);
             mButtonL.setOnClickListener(this::moveLeft);
             mButtonS.setOnClickListener(this::stopMoving);
+            mButtonU.setOnClickListener(this::speedUp);
+            mButtonD.setOnClickListener(this::slowDown);
         }
         binding.fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                 .setAnchorView(R.id.fab)
@@ -215,6 +222,17 @@ public class MainActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.S)
     private void connectToArduino(View view) {
+        if(mBTSocket != null && mBTSocket.isConnected()) {
+            try {
+                stopMoving(view);
+                mBTSocket.close();
+                mHandler.obtainMessage(CONNECTING_STATUS, -1, 1)
+                        .sendToTarget();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            return;
+        }
 
         mBTArrayAdapter.clear();
 
@@ -349,6 +367,14 @@ public class MainActivity extends AppCompatActivity {
         mButtonB.setHovered(false);
         mButtonL.setHovered(false);
         mButtonR.setHovered(false);
+    }
+
+    private void slowDown(View view) {
+        mConnectedThread.write("d");
+    }
+
+    private void speedUp(View view) {
+        mConnectedThread.write("u");
     }
 }
 

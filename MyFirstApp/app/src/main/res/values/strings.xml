@@ -5,11 +5,14 @@
     <string name="sBTstaNF">Status: Bluetooth not found</string>
     <string name="BTconnFail">Connection Failed</string>
     <string name="BTConnected">Connected to HC-05!</string>
+    <string name="BTDisconnected">Disconnected</string>
     <string name="cConnect">Connecting…</string>
     <string name="ErrSockCrea">Socket creation failed</string>
     <string name="BTnotOn">Bluetooth not on</string>
     <string name="DisconnectBT">Disconnect from HC-05</string>
     <string name="ConnectBT">Connect to HC-05</string>
+    <string name="readBuffer">&lt;Read Buffer></string>
+    <string name="Rx">Instruction: </string>
 
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">ATR-01</string>
@@ -21,6 +24,8 @@
     <string name="left">Left</string>
     <string name="right">Right</string>
     <string name="stop">Stop</string>
+    <string name="up">Speed Up</string>
+    <string name="down">Slow Down</string>
     <string name="previous">Previous</string>
     <string name="conn_status">
         Disconnected
