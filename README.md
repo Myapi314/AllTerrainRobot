@@ -7,7 +7,8 @@ In order to accomplish this one member of the team developed an Android app with
 
 One thing to note is that the HC-05 Component seems to struggle with sending the whole message back to the application and sometimes only catches part of the message.
 
-[Demo of Project]()
+[Demo of Project](https://youtu.be/gv6-p23rhbU)
+[Walk-Thru of App Development](https://youtu.be/SRUWbmDXMxQ)
 
 # Design 
 ![image](https://github.com/Myapi314/AllTerrainRobot/assets/97209406/b97788fb-4cd8-41e9-adc1-b6ae49ee54ee)
