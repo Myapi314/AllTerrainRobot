@@ -8,6 +8,7 @@ In order to accomplish this one member of the team developed an Android app with
 One thing to note is that the HC-05 Component seems to struggle with sending the whole message back to the application and sometimes only catches part of the message.
 
 [Demo of Project](https://youtu.be/gv6-p23rhbU)
+
 [Walk-Thru of App Development](https://youtu.be/SRUWbmDXMxQ)
 
 # Design 
